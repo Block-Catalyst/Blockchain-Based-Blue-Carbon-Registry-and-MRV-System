@@ -1,68 +1,71 @@
-// import React from "react";
-// import LoginForm from "../components/LoginForm";
-
-// export default function Login(){
-//   return (
-//     <div className="max-w-md mx-auto mt-10">
-//       <div className="bg-white p-6 rounded shadow">
-//         <h2 className="text-xl font-semibold mb-4">Login</h2>
-//         <LoginForm />
-//       </div>
-//     </div>
-//   )
-// }
 import React from "react";
-import { motion } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { useNavigate } from "react-router-dom";
+
+const schema = yup.object({
+  role: yup.string().required("Please select your role"),
+  email: yup.string().email("Enter a valid email").required("Email is required"),
+}).required();
 
 export default function Login() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6">
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-xl"
-      >
-        <h2 className="text-3xl font-bold text-center text-indigo-600 mb-6">
-          🔐 Login
-        </h2>
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: { role: "field", email: "" }
+  });
 
-        <form className="space-y-5">
+  const navigate = useNavigate();
+
+  const onSubmit = (data) => {
+    localStorage.setItem("role", data.role);
+    localStorage.setItem("email", data.email);
+
+    if (data.role === "admin") {
+      navigate("/admin");
+    } else if (data.role === "field") {
+      navigate("/field-portal");
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="w-full max-w-md bg-white shadow-lg rounded-xl p-8">
+        <h2 className="text-3xl font-bold mb-6 text-center text-primary">Login</h2>
+        
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Role Selection */}
           <div>
-            <label className="block text-gray-700 mb-2">Email</label>
-            <input
-              type="email"
-              required
-              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none"
+            <label className="block text-sm font-medium mb-1">Select Role</label>
+            <select {...register("role")} className="w-full border rounded-lg p-2">
+              <option value="field">Field User</option>
+              <option value="admin">Admin</option>
+            </select>
+            <p className="text-red-500 text-xs mt-1">{errors.role?.message}</p>
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Email</label>
+            <input 
+              {...register("email")} 
+              className="w-full border rounded-lg p-2" 
               placeholder="Enter your email"
             />
+            <p className="text-red-500 text-xs mt-1">{errors.email?.message}</p>
           </div>
 
+          {/* ✅ Button Always Visible */}
           <div>
-            <label className="block text-gray-700 mb-2">Password</label>
-            <input
-              type="password"
-              required
-              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none"
-              placeholder="Enter your password"
-            />
+            <button 
+              type="submit" 
+              className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition"
+            >
+              Login
+            </button>
           </div>
-
-          <button
-            type="submit"
-            className="w-full py-3 bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-2xl hover:scale-[1.02] transition"
-          >
-            🚀 Login
-          </button>
         </form>
-
-        <p className="text-sm text-gray-600 text-center mt-4">
-          Don’t have an account?{" "}
-          <span className="text-indigo-600 font-semibold cursor-pointer hover:underline">
-            Sign up
-          </span>
-        </p>
-      </motion.div>
+      </div>
     </div>
   );
 }

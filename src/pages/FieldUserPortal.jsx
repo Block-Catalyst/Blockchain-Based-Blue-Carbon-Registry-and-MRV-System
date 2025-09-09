@@ -2,90 +2,108 @@ import React, { useState } from "react";
 
 export default function FieldUserPortal() {
   const [projects, setProjects] = useState([]);
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    image: null,
+  });
+
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+    if (name === "image") {
+      setForm({ ...form, image: files[0] });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!form.title || !form.description || !form.image) return;
 
-    const form = e.target;
     const newProject = {
-      name: form.projectName.value,
-      gps: form.gps.value,
-      image: form.image.value.split("\\").pop(), // show file name only
+      id: Date.now(),
+      title: form.title,
+      description: form.description,
+      image: URL.createObjectURL(form.image),
     };
 
     setProjects([...projects, newProject]);
-    form.reset(); // clear form after submit
+    setForm({ title: "", description: "", image: null });
+    e.target.reset();
   };
 
   return (
-    <div className="grid md:grid-cols-2 gap-6 mt-10 max-w-6xl mx-auto">
-      {/* Left Column - Form */}
-      <div className="bg-white/80 backdrop-blur-md shadow-xl rounded-2xl p-6">
-        <h2 className="text-2xl font-bold mb-4 text-indigo-600">
-          🌱 Submit New Project
-        </h2>
-        <form className="space-y-4" onSubmit={handleSubmit}>
+    <div className="min-h-screen bg-gray-50 p-8">
+      <h2 className="text-3xl font-bold mb-8 text-primary text-center">Field User Portal</h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Left Side - Submit Project Form */}
+        <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-lg">
+          <h3 className="text-xl font-semibold mb-4">Submit New Project</h3>
+
           <div>
-            <label className="block text-gray-700 mb-1">Project Name</label>
+            <label className="block text-sm font-medium">Project Title</label>
             <input
-              type="text"
-              name="projectName"
-              required
-              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none"
-              placeholder="Enter project name"
+              name="title"
+              value={form.title}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-2"
+              placeholder="Enter project title"
             />
           </div>
+
           <div>
-            <label className="block text-gray-700 mb-1">Upload Image</label>
+            <label className="block text-sm font-medium">Description</label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-2"
+              placeholder="Enter project description"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium">Upload Image</label>
             <input
               type="file"
               name="image"
-              required
-              className="w-full p-3 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-indigo-400 outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 mb-1">GPS Location</label>
-            <input
-              type="text"
-              name="gps"
-              required
-              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none"
-              placeholder="Latitude, Longitude"
+              accept="image/*"
+              onChange={handleChange}
+              className="w-full"
             />
           </div>
 
-          {/* ✅ Submit Button */}
+          {/* ✅ Always Visible Submit Button */}
           <button
             type="submit"
-            className="w-full py-3 bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-2xl hover:scale-[1.02] transition"
+            className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition"
           >
-            🚀 Submit Project
+            Submit Project
           </button>
         </form>
-      </div>
 
-      {/* Right Column - Submitted Projects */}
-      <div className="bg-white/70 backdrop-blur-md shadow-xl rounded-2xl p-6">
-        <h2 className="text-xl font-bold mb-4 text-gray-800">
-          📋 Submitted Projects
-        </h2>
-        {projects.length === 0 ? (
-          <p className="text-gray-500">No projects submitted yet.</p>
-        ) : (
-          <ul className="space-y-3">
-            {projects.map((proj, idx) => (
-              <li
-                key={idx}
-                className="p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition"
-              >
-                <h3 className="font-semibold text-indigo-600">{proj.name}</h3>
-                <p className="text-sm text-gray-600">📍 {proj.gps}</p>
-                <p className="text-sm text-gray-500">🖼️ {proj.image}</p>
-              </li>
-            ))}
-          </ul>
-        )}
+        {/* Right Side - Submitted Projects */}
+        <div>
+          <h3 className="text-xl font-semibold mb-4">Submitted Projects</h3>
+          {projects.length === 0 ? (
+            <p className="text-gray-500">No projects submitted yet.</p>
+          ) : (
+            <div className="grid gap-6">
+              {projects.map((p) => (
+                <div key={p.id} className="bg-white shadow rounded-lg overflow-hidden">
+                  <img src={p.image} alt={p.title} className="w-full h-40 object-cover" />
+                  <div className="p-4">
+                    <h4 className="font-bold">{p.title}</h4>
+                    <p className="text-sm text-gray-600">{p.description}</p>
+                    {/* 🚫 Removed Pending Badge */}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
