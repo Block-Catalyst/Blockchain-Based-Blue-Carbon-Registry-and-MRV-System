@@ -11,7 +11,7 @@ const schema = yup.object({
   password: yup.string().min(4, "Password must be at least 4 characters").required("Password is required"),
 }).required();
 
-export default function Login() {
+export default function Login({ setUser }) {   // ✅ accept setUser from App.jsx
   const { register, handleSubmit, watch, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: { role: "field", email: "", password: "" }
@@ -21,11 +21,9 @@ export default function Login() {
   const role = watch("role");
 
   const onSubmit = (data) => {
-    // Get registered user from localStorage
     const storedUser = JSON.parse(localStorage.getItem("registeredUser"));
 
     if (role === "admin") {
-      // Simple check for admin (can be enhanced later)
       if (data.email === "admin@example.com" && data.password === "admin123") {
         navigate("/admin");
       } else {
@@ -37,9 +35,17 @@ export default function Login() {
         storedUser.email === data.email &&
         storedUser.password === data.password
       ) {
-        // Save logged-in user
+        // ✅ Save logged-in user globally (Navbar will use this)
+        setUser({
+          email: data.email,
+          project: "Mangrove Restoration A",   // dummy project for now
+          credits: 1200,                       // dummy credits
+          area: 50                             // dummy area
+        });
+
         localStorage.setItem("role", "field");
         localStorage.setItem("email", data.email);
+
         navigate("/field-portal");
       } else {
         alert("Invalid Field User credentials! Please register first.");
@@ -102,7 +108,7 @@ export default function Login() {
             </div>
           )}
 
-          {/* ✅ Button Always Visible */}
+          {/* Submit */}
           <div>
             <button 
               type="submit" 

@@ -1,16 +1,15 @@
 import React, { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-
-export default function Navbar() {
+import { FaUserCircle } from "react-icons/fa";
+export default function Navbar({ user, setUser }) {
   const [open, setOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
-  // Updated navigation links — added Map link
   const navLinks = [
     { path: "/", label: "Home" },
     { path: "/dashboard", label: "Dashboard" },
-    { path: "/map", label: "Map" }, // ✅ New Map link
-    { path: "/login", label: "Login" },
+    { path: "/map", label: "Map" },
   ];
 
   const linkClasses = ({ isActive }) =>
@@ -31,12 +30,42 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex gap-6">
+        <div className="hidden md:flex gap-6 items-center">
           {navLinks.map((link) => (
             <NavLink key={link.path} to={link.path} className={linkClasses}>
               {link.label}
             </NavLink>
           ))}
+
+          {/* ✅ If user logged in, show profile instead of login */}
+          {user ? (
+            <div className="relative">
+              <button onClick={() => setProfileOpen(!profileOpen)} className="text-3xl text-gray-700">
+                <FaUserCircle />
+              </button>
+              {profileOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-lg p-4">
+                  <p className="font-bold">{user.email}</p>
+                  <p className="text-sm text-gray-600">Project: {user.project}</p>
+                  <p className="text-sm text-gray-600">Credits: {user.credits}</p>
+                  <p className="text-sm text-gray-600">Area: {user.area} ha</p>
+                  <button
+                    onClick={() => {
+                      setUser(null);
+                      setProfileOpen(false);
+                    }}
+                    className="mt-3 w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <NavLink to="/login" className={linkClasses}>
+              Login
+            </NavLink>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -79,6 +108,29 @@ export default function Navbar() {
                   {link.label}
                 </NavLink>
               ))}
+
+              {/* Mobile Profile/Login */}
+              {user ? (
+                <div className="mt-4 border-t pt-4">
+                  <p className="font-bold">{user.email}</p>
+                  <p className="text-sm text-gray-600">Project: {user.project}</p>
+                  <p className="text-sm text-gray-600">Credits: {user.credits}</p>
+                  <p className="text-sm text-gray-600">Area: {user.area} ha</p>
+                  <button
+                    onClick={() => {
+                      setUser(null);
+                      setOpen(false);
+                    }}
+                    className="mt-3 w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <NavLink to="/login" onClick={() => setOpen(false)} className="font-medium text-gray-700">
+                  Login
+                </NavLink>
+              )}
             </div>
           </motion.div>
         )}
