@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import FieldUserPortal from "./pages/FieldUserPortal";
 import AdminPanel from "./pages/AdminPanel";
 import TransparencyDashboard from "./pages/TransparencyDashboard";
+import PublicMap from "./pages/PublicMap"; // ✅ Import PublicMap
 import Navbar from "./components/Navbar";
 
 export default function App() {
@@ -70,7 +71,6 @@ export default function App() {
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
 
-          {/* Pass projects and handlers as props */}
           <Route
             path="field-portal"
             element={<FieldUserPortal projects={projects} addProject={addProject} />}
@@ -80,6 +80,7 @@ export default function App() {
             element={<AdminPanel projects={projects} updateStatus={updateStatus} />}
           />
           <Route path="dashboard" element={<TransparencyDashboard />} />
+          <Route path="map" element={<PublicMap />} /> {/* ✅ New Map Route */}
         </Routes>
       </main>
     </div>

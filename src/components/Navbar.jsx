@@ -5,10 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function Navbar() {
   const [open, setOpen] = useState(false);
 
-  // Updated navigation links — removed Field Portal and Admin Panel
+  // Updated navigation links — added Map link
   const navLinks = [
     { path: "/", label: "Home" },
     { path: "/dashboard", label: "Dashboard" },
+    { path: "/map", label: "Map" }, // ✅ New Map link
     { path: "/login", label: "Login" },
   ];
 
