@@ -9,6 +9,7 @@ import AdminPanel from "./pages/AdminPanel";
 import TransparencyDashboard from "./pages/TransparencyDashboard";
 import PublicMap from "./pages/PublicMap";
 import Navbar from "./components/Navbar";
+import ProjectDetails from "./pages/ProjectDetails"; // ✅
 
 export default function App() {
   const [projects, setProjects] = useState([
@@ -51,9 +52,51 @@ export default function App() {
       image: "/images/admin/project3.jpg",
       status: "rejected",
     },
+    {
+      id: 4,
+      name: "Coral Reef Revival D",
+      organization: "OceanCare Foundation",
+      region: "Andaman Islands",
+      area: 80,
+      method: "mixed",
+      vintage: 2022,
+      credits: 2200,
+      description:
+        "Revival and protection of coral reefs using artificial reef blocks and mangrove buffers.",
+      image: "/images/admin/project4.jpg",
+      status: "approved",
+    },
+    {
+      id: 5,
+      name: "Salt Marsh Protection E",
+      organization: "EcoDelta Trust",
+      region: "Sundarbans",
+      area: 100,
+      method: "natural_regeneration",
+      vintage: 2021,
+      credits: 950,
+      description:
+        "Community-driven effort to conserve salt marshes and restore biodiversity in the delta region.",
+      image: "/images/admin/project5.jpg",
+      status: "verified",
+    },
+    {
+      id: 6,
+      name: "Wetland Restoration F",
+      organization: "Blue Carbon Collective",
+      region: "Kerala Backwaters",
+      area: 40,
+      method: "plantation",
+      vintage: 2023,
+      credits: 1500,
+      description:
+        "Wetland mangrove replantation program combining local traditional knowledge with satellite monitoring.",
+      image: "/images/admin/project6.jpg",
+      status: "pending",
+    },
   ]);
 
-  // ✅ NEW: Auth state
+  // ✅ Auth state
   const [user, setUser] = useState(null);
 
   const addProject = (newProject) => {
@@ -68,13 +111,12 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
-      {/* Pass user + setUser to Navbar */}
       <Navbar user={user} setUser={setUser} />
 
       <main className="max-w-6xl mx-auto p-4">
         <Routes>
-          <Route index element={<Home />} />
-          <Route path="login" element={<Login setUser={setUser} />} /> {/* ✅ pass setUser */}
+          <Route index element={<Home projects={projects} />} />
+          <Route path="login" element={<Login setUser={setUser} />} />
           <Route path="register" element={<Register />} />
 
           <Route
@@ -87,6 +129,7 @@ export default function App() {
           />
           <Route path="dashboard" element={<TransparencyDashboard />} />
           <Route path="map" element={<PublicMap />} />
+          <Route path="project/:id" element={<ProjectDetails projects={projects} />} />
         </Routes>
       </main>
     </div>

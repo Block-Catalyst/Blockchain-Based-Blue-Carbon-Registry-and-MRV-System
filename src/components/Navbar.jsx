@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaUserCircle } from "react-icons/fa";
+
 export default function Navbar({ user, setUser }) {
   const [open, setOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -46,9 +47,18 @@ export default function Navbar({ user, setUser }) {
               {profileOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-lg p-4">
                   <p className="font-bold">{user.email}</p>
-                  <p className="text-sm text-gray-600">Project: {user.project}</p>
-                  <p className="text-sm text-gray-600">Credits: {user.credits}</p>
-                  <p className="text-sm text-gray-600">Area: {user.area} ha</p>
+
+                  {/* Show extra info depending on role */}
+                  {user.role === "admin" ? (
+                    <p className="text-sm text-gray-600">Username: Admin</p>
+                  ) : (
+                    <>
+                      <p className="text-sm text-gray-600">Project: {user.project}</p>
+                      <p className="text-sm text-gray-600">Credits: {user.credits}</p>
+                      <p className="text-sm text-gray-600">Area: {user.area} ha</p>
+                    </>
+                  )}
+
                   <button
                     onClick={() => {
                       setUser(null);
@@ -113,9 +123,17 @@ export default function Navbar({ user, setUser }) {
               {user ? (
                 <div className="mt-4 border-t pt-4">
                   <p className="font-bold">{user.email}</p>
-                  <p className="text-sm text-gray-600">Project: {user.project}</p>
-                  <p className="text-sm text-gray-600">Credits: {user.credits}</p>
-                  <p className="text-sm text-gray-600">Area: {user.area} ha</p>
+
+                  {user.role === "admin" ? (
+                    <p className="text-sm text-gray-600">Username: Admin</p>
+                  ) : (
+                    <>
+                      <p className="text-sm text-gray-600">Project: {user.project}</p>
+                      <p className="text-sm text-gray-600">Credits: {user.credits}</p>
+                      <p className="text-sm text-gray-600">Area: {user.area} ha</p>
+                    </>
+                  )}
+
                   <button
                     onClick={() => {
                       setUser(null);
