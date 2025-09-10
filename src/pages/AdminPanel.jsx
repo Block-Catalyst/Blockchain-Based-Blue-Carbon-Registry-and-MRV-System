@@ -1,37 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 
-export default function AdminPanel() {
-  const [projects, setProjects] = useState([
-    {
-      id: 1,
-      name: "Mangrove Restoration A",
-      image: "/images/admin/project1.jpg", // ✅ correct path
-      description: "Community-led mangrove plantation in coastal zone A.",
-      status: "pending",
-    },
-    {
-      id: 2,
-      name: "Coastal Cleanup B",
-      image: "/images/admin/project2.jpg", // ✅ correct path
-      description: "Plastic waste cleanup initiative with local schools.",
-      status: "approved",
-    },
-    {
-      id: 3,
-      name: "Wetland Protection C",
-      image: "/images/admin/project3.jpg", // ✅ correct path
-      description: "Protecting and restoring wetlands in delta region.",
-      status: "rejected",
-    },
-  ]);
-
-  const updateStatus = (id, newStatus) => {
-    setProjects((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, status: newStatus } : p))
-    );
-  };
-
+export default function AdminPanel({ projects, updateStatus }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
       <motion.h1
@@ -58,12 +28,8 @@ export default function AdminPanel() {
               className="w-full h-40 object-cover"
             />
             <div className="p-5">
-              <h2 className="text-xl font-bold text-gray-800">
-                {project.name}
-              </h2>
-              <p className="text-gray-600 text-sm mt-2">
-                {project.description}
-              </p>
+              <h2 className="text-xl font-bold text-gray-800">{project.name}</h2>
+              <p className="text-gray-600 text-sm mt-2">{project.description}</p>
               <span
                 className={`inline-block mt-3 px-3 py-1 rounded-full text-xs font-medium ${
                   project.status === "approved"

@@ -4,27 +4,46 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 
+// Validation Schema
 const schema = yup.object({
   role: yup.string().required("Please select your role"),
   email: yup.string().email("Enter a valid email").required("Email is required"),
+  password: yup.string().min(4, "Password must be at least 4 characters").required("Password is required"),
 }).required();
 
 export default function Login() {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: { role: "field", email: "" }
+    defaultValues: { role: "field", email: "", password: "" }
   });
 
   const navigate = useNavigate();
+  const role = watch("role");
 
   const onSubmit = (data) => {
-    localStorage.setItem("role", data.role);
-    localStorage.setItem("email", data.email);
+    // Get registered user from localStorage
+    const storedUser = JSON.parse(localStorage.getItem("registeredUser"));
 
-    if (data.role === "admin") {
-      navigate("/admin");
-    } else if (data.role === "field") {
-      navigate("/field-portal");
+    if (role === "admin") {
+      // Simple check for admin (can be enhanced later)
+      if (data.email === "admin@example.com" && data.password === "admin123") {
+        navigate("/admin");
+      } else {
+        alert("Invalid admin credentials!");
+      }
+    } else if (role === "field") {
+      if (
+        storedUser &&
+        storedUser.email === data.email &&
+        storedUser.password === data.password
+      ) {
+        // Save logged-in user
+        localStorage.setItem("role", "field");
+        localStorage.setItem("email", data.email);
+        navigate("/field-portal");
+      } else {
+        alert("Invalid Field User credentials! Please register first.");
+      }
     }
   };
 
@@ -54,6 +73,34 @@ export default function Login() {
             />
             <p className="text-red-500 text-xs mt-1">{errors.email?.message}</p>
           </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Password</label>
+            <input 
+              type="password"
+              {...register("password")} 
+              className="w-full border rounded-lg p-2" 
+              placeholder="Enter your password"
+            />
+            <p className="text-red-500 text-xs mt-1">{errors.password?.message}</p>
+          </div>
+
+          {/* Signup option only for Field Users */}
+          {role === "field" && (
+            <div className="text-sm text-center">
+              <p>
+                New User?{" "}
+                <button 
+                  type="button"
+                  onClick={() => navigate("/register")}
+                  className="text-blue-600 hover:underline"
+                >
+                  Sign Up
+                </button>
+              </p>
+            </div>
+          )}
 
           {/* ✅ Button Always Visible */}
           <div>
