@@ -1,4 +1,3 @@
-// App.jsx
 import React, { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
@@ -10,6 +9,7 @@ import TransparencyDashboard from "./pages/TransparencyDashboard";
 import PublicMap from "./pages/PublicMap";
 import Navbar from "./components/Navbar";
 import ProjectDetails from "./pages/ProjectDetails"; // ✅
+import CaptureUpload from "./pages/CaptureUpload"; // ✅ added route
 
 export default function App() {
   const [projects, setProjects] = useState([
@@ -78,7 +78,7 @@ export default function App() {
       description:
         "Community-driven effort to conserve salt marshes and restore biodiversity in the delta region.",
       image: "/images/dash2.jpg",
-      status: "verified",
+      status: "rejected",
     },
     {
       id: 6,
@@ -96,7 +96,6 @@ export default function App() {
     },
   ]);
 
-  // ✅ Auth state
   const [user, setUser] = useState(null);
 
   const addProject = (newProject) => {
@@ -123,11 +122,21 @@ export default function App() {
             path="field-portal"
             element={<FieldUserPortal projects={projects} addProject={addProject} />}
           />
+
+          {/* ✅ Capture Upload route */}
+          <Route path="capture-upload" element={<CaptureUpload />} />
+
           <Route
             path="admin"
             element={<AdminPanel projects={projects} updateStatus={updateStatus} />}
           />
-          <Route path="dashboard" element={<TransparencyDashboard />} />
+
+          {/* ✅ Fixed: pass projects to dashboard */}
+          <Route
+            path="dashboard"
+            element={<TransparencyDashboard projects={projects} />}
+          />
+
           <Route path="map" element={<PublicMap />} />
           <Route path="project/:id" element={<ProjectDetails projects={projects} />} />
         </Routes>
