@@ -30,7 +30,7 @@ export default function PublicMap() {
           onClick={() => setShowRegions(!showRegions)}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
         >
-          {showRegions ? "Hide Carbon Regions" : "More Carbon-Credited Regions"}
+          {showRegions ? "Hide Carbon Regions" : "Show Carbon-Credited Regions"}
         </button>
       </div>
 

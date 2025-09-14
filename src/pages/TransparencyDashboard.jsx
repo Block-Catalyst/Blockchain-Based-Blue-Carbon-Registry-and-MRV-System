@@ -2,69 +2,11 @@ import React, { useState } from "react";
 import { PieChart, Pie, Cell, Tooltip as PieTooltip, ResponsiveContainer as PieResponsive } from "recharts";
 import { AreaChart, Area, XAxis, YAxis, Tooltip as AreaTooltip, ResponsiveContainer as AreaResponsive } from "recharts";
 
-export default function TransparencyDashboard() {
-  // Mock data with 6 projects + images
-  const [projects] = useState([
-    {
-      id: 1,
-      name: "Mangrove Restoration A",
-      organization: "Green Earth NGO",
-      region: "Chennai Coast",
-      credits: 1200,
-      status: "approved",
-      image: "https://source.unsplash.com/400x250/?mangrove,forest",
-    },
-    {
-      id: 2,
-      name: "Coastal Cleanup B",
-      organization: "Blue Ocean Trust",
-      region: "Marina Beach",
-      credits: 800,
-      status: "pending",
-      image: "https://source.unsplash.com/400x250/?beach,cleanup",
-    },
-    {
-      id: 3,
-      name: "Wetland Protection C",
-      organization: "EcoCare",
-      region: "Delta Zone",
-      credits: 500,
-      status: "rejected",
-      image: "https://source.unsplash.com/400x250/?wetland,river",
-    },
-    {
-      id: 4,
-      name: "Coral Reef Revival D",
-      organization: "OceanCare",
-      region: "Andaman Islands",
-      credits: 2200,
-      status: "approved",
-      image: "https://source.unsplash.com/400x250/?coral,reef",
-    },
-    {
-      id: 5,
-      name: "Mangrove Planting E",
-      organization: "Blue Carbon Trust",
-      region: "Kerala Backwaters",
-      credits: 1500,
-      status: "pending",
-      image: "https://source.unsplash.com/400x250/?mangrove,tree",
-    },
-    {
-      id: 6,
-      name: "Salt Marsh Protection F",
-      organization: "EcoDelta",
-      region: "Sundarbans",
-      credits: 950,
-      status: "approved",
-      image: "https://source.unsplash.com/400x250/?marsh,ecosystem",
-    },
-  ]);
-
+export default function TransparencyDashboard({ projects }) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
-  // Filter + Search Logic
+  // 🔹 Filter + Search Logic
   const filteredProjects = projects.filter((p) => {
     const matchesSearch =
       p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -76,7 +18,7 @@ export default function TransparencyDashboard() {
     return matchesSearch && matchesFilter;
   });
 
-  // Pie Chart Data
+  // 🔹 Pie Chart Data
   const statusData = [
     { name: "Approved", value: projects.filter(p => p.status === "approved").length },
     { name: "Pending", value: projects.filter(p => p.status === "pending").length },
@@ -84,7 +26,7 @@ export default function TransparencyDashboard() {
   ];
   const COLORS = ["#22c55e", "#eab308", "#ef4444"];
 
-  // Area Chart Data (dummy example)
+  // 🔹 Area Chart Data (dummy for now, can be extended)
   const chartData = [
     { name: "Jan", credits: 1500 },
     { name: "Feb", credits: 2000 },

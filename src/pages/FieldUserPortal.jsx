@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function FieldUserPortal({ addProject }) {
   const [form, setForm] = useState({
@@ -10,21 +11,30 @@ export default function FieldUserPortal({ addProject }) {
     vintage: "",
     credits: "",
     description: "",
-    file: null,
+    file: null, // will store verified image (base64)
     agree: false,
   });
 
   const [localProjects, setLocalProjects] = useState([]);
+  const navigate = useNavigate();
+
+  // ✅ Load verified image from CaptureUpload (if available)
+  useEffect(() => {
+    const verifiedImage = localStorage.getItem("verifiedImage");
+    if (verifiedImage) {
+      setForm((prev) => ({ ...prev, file: verifiedImage }));
+      localStorage.removeItem("verifiedImage");
+    }
+  }, []);
 
   const handleChange = (e) => {
-    const { name, value, files, type, checked } = e.target;
-    if (type === "file") {
-      setForm({ ...form, file: files[0] });
-    } else if (type === "checkbox") {
-      setForm({ ...form, [name]: checked });
-    } else {
-      setForm({ ...form, [name]: value });
-    }
+    const { name, value, type, checked } = e.target;
+    setForm({ ...form, [name]: type === "checkbox" ? checked : value });
+  };
+
+  // ✅ Navigate to CaptureUpload for image verification
+  const handleFileRedirect = () => {
+    navigate("/capture-upload");
   };
 
   const handleSubmit = (e) => {
@@ -44,17 +54,14 @@ export default function FieldUserPortal({ addProject }) {
       vintage: form.vintage,
       credits: parseInt(form.credits) || 0,
       description: form.description,
-      image: form.file ? URL.createObjectURL(form.file) : "",
+      image: form.file, // ✅ base64 from CaptureUpload
       status: "pending",
     };
 
-    // Add to global state for admin approval
     addProject(newProject);
-
-    // Add to local state to show only this user's submissions
     setLocalProjects((prev) => [...prev, newProject]);
 
-    // Reset form
+    // reset form
     setForm({
       name: "",
       organization: "",
@@ -67,7 +74,6 @@ export default function FieldUserPortal({ addProject }) {
       file: null,
       agree: false,
     });
-    e.target.reset();
   };
 
   return (
@@ -77,7 +83,7 @@ export default function FieldUserPortal({ addProject }) {
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Form */}
+        {/* FORM */}
         <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-lg">
           <input
             type="text"
@@ -87,6 +93,7 @@ export default function FieldUserPortal({ addProject }) {
             placeholder="Project Name"
             className="w-full border rounded-lg p-2"
           />
+
           <div className="grid grid-cols-2 gap-4">
             <input
               type="text"
@@ -105,6 +112,7 @@ export default function FieldUserPortal({ addProject }) {
               className="w-full border rounded-lg p-2"
             />
           </div>
+
           <div className="grid grid-cols-4 gap-4">
             <input
               type="number"
@@ -142,6 +150,7 @@ export default function FieldUserPortal({ addProject }) {
               className="w-full border rounded-lg p-2"
             />
           </div>
+
           <textarea
             name="description"
             value={form.description}
@@ -149,18 +158,33 @@ export default function FieldUserPortal({ addProject }) {
             placeholder="Description / Species Mix / Notes"
             className="w-full border rounded-lg p-2"
           />
+
+          {/* ✅ Image Verification Section */}
           <div>
             <label className="block text-sm font-medium mb-1">
               Upload baseline evidence (GeoJSON, images, drone orthomosaic)
             </label>
-            <input
-              type="file"
-              name="file"
-              accept="image/*,.geojson"
-              onChange={handleChange}
-              className="w-full"
-            />
+
+            {/* Preview of verified image */}
+            {form.file && (
+              <img
+                src={form.file}
+                alt="Verified"
+                className="mb-2 w-64 h-64 object-cover rounded-lg shadow"
+              />
+            )}
+
+            <button
+              type="button"
+              onClick={handleFileRedirect}
+              className={`w-full border rounded-lg p-2 ${
+                form.file ? "bg-green-100 text-green-700" : "bg-gray-100"
+              }`}
+            >
+              {form.file ? "✅ Image Verified" : "Upload & Verify Image"}
+            </button>
           </div>
+
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -170,6 +194,7 @@ export default function FieldUserPortal({ addProject }) {
             />
             <label>I affirm data is accurate to my knowledge</label>
           </div>
+
           <button
             type="submit"
             className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition"
@@ -178,7 +203,7 @@ export default function FieldUserPortal({ addProject }) {
           </button>
         </form>
 
-        {/* Local Projects */}
+        {/* LOCAL PROJECT LIST */}
         <div>
           <h3 className="text-xl font-semibold mb-4">Your Submitted Projects</h3>
           {localProjects.length === 0 ? (
