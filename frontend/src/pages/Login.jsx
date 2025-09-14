@@ -4,7 +4,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 
-// ✅ Validation Schema
+// Validation Schema
 const schema = yup
   .object({
     role: yup.string().required("Please select your role"),
@@ -28,14 +28,13 @@ export default function Login({ setUser }) {
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
-    mode: "onChange", // 👈 re-validate on each change
+    mode: "onChange",
     defaultValues: { role: "field", email: "", password: "" },
   });
 
   const navigate = useNavigate();
   const role = watch("role");
 
-  // 👇 whenever role changes, recheck email validation
   useEffect(() => {
     trigger("email");
   }, [role, trigger]);
@@ -45,16 +44,9 @@ export default function Login({ setUser }) {
 
     if (role === "admin") {
       if (data.email === "admin@example.com" && data.password === "admin123") {
-        // ✅ Save Admin globally
-        setUser({
-          role: "admin",
-          email: data.email,
-          username: "Admin",
-        });
-
+        setUser({ role: "admin", email: data.email, username: "Admin" });
         localStorage.setItem("role", "admin");
         localStorage.setItem("email", data.email);
-
         navigate("/admin");
       } else {
         alert("Invalid admin credentials!");
@@ -65,7 +57,6 @@ export default function Login({ setUser }) {
         storedUser.email === data.email &&
         storedUser.password === data.password
       ) {
-        // ✅ Save Field user globally
         setUser({
           role: "field",
           email: data.email,
@@ -73,10 +64,8 @@ export default function Login({ setUser }) {
           credits: 1200,
           area: 50,
         });
-
         localStorage.setItem("role", "field");
         localStorage.setItem("email", data.email);
-
         navigate("/field-portal");
       } else {
         alert("Invalid Field User credentials! Please register first.");
@@ -85,19 +74,21 @@ export default function Login({ setUser }) {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-md bg-white shadow-lg rounded-xl p-8">
-        <h2 className="text-3xl font-bold mb-6 text-center text-primary">
-          Login
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 via-white to-green-50">
+      <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-8 border border-gray-100">
+        <h2 className="text-3xl font-extrabold mb-6 text-center text-blue-700">
+          Welcome Back
         </h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Role Selection */}
           <div>
-            <label className="block text-sm font-medium mb-1">Select Role</label>
+            <label className="block text-sm font-semibold mb-1 text-gray-700">
+              Select Role
+            </label>
             <select
               {...register("role")}
-              className="w-full border rounded-lg p-2"
+              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
             >
               <option value="field">Field User</option>
               <option value="admin">Admin</option>
@@ -107,10 +98,12 @@ export default function Login({ setUser }) {
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
+            <label className="block text-sm font-semibold mb-1 text-gray-700">
+              Email
+            </label>
             <input
               {...register("email")}
-              className="w-full border rounded-lg p-2"
+              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
               placeholder="Enter your email"
             />
             <p className="text-red-500 text-xs mt-1">{errors.email?.message}</p>
@@ -118,11 +111,13 @@ export default function Login({ setUser }) {
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-medium mb-1">Password</label>
+            <label className="block text-sm font-semibold mb-1 text-gray-700">
+              Password
+            </label>
             <input
               type="password"
               {...register("password")}
-              className="w-full border rounded-lg p-2"
+              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
               placeholder="Enter your password"
             />
             <p className="text-red-500 text-xs mt-1">
@@ -132,13 +127,13 @@ export default function Login({ setUser }) {
 
           {/* Signup option only for Field Users */}
           {role === "field" && (
-            <div className="text-sm text-center">
+            <div className="text-sm text-center text-gray-600">
               <p>
                 New User?{" "}
                 <button
                   type="button"
                   onClick={() => navigate("/register")}
-                  className="text-blue-600 hover:underline"
+                  className="text-blue-600 font-semibold hover:underline"
                 >
                   Sign Up
                 </button>
@@ -150,7 +145,7 @@ export default function Login({ setUser }) {
           <div>
             <button
               type="submit"
-              className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition"
+              className="w-full py-3 bg-gradient-to-r from-blue-600 to-green-600 text-white font-bold rounded-lg shadow-md hover:opacity-90 active:scale-95 transition"
             >
               Login
             </button>

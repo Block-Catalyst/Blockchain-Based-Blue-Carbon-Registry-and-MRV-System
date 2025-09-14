@@ -63,7 +63,7 @@ export default function App() {
       credits: 2200,
       description:
         "Revival and protection of coral reefs using artificial reef blocks and mangrove buffers.",
-      image: "/images/admin/project4.jpg",
+      image: "/images/mangrove1.jpg",
       status: "approved",
     },
     {
@@ -77,7 +77,7 @@ export default function App() {
       credits: 950,
       description:
         "Community-driven effort to conserve salt marshes and restore biodiversity in the delta region.",
-      image: "/images/admin/project5.jpg",
+      image: "/images/mangrove2.jpg",
       status: "verified",
     },
     {
@@ -91,7 +91,7 @@ export default function App() {
       credits: 1500,
       description:
         "Wetland mangrove replantation program combining local traditional knowledge with satellite monitoring.",
-      image: "/images/admin/project6.jpg",
+      image: "/images/mangrove3.jpg",
       status: "pending",
     },
   ]);

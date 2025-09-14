@@ -18,7 +18,7 @@ const initialCarbonData = {
   "Tamil Nadu": { emission: 4, credits: 720 },
 };
 
-// ✅ Mangrove Data (from your friend’s code, adjusted to NAME_1 in GeoJSON)
+// ✅ Mangrove Data
 const mangroveData = {
   "Andaman and Nicobar": { very: 255, moderate: 272, open: 110, total: 637 },
   "Andhra Pradesh": { very: 0, moderate: 15, open: 314, total: 329 },
@@ -34,7 +34,7 @@ const mangroveData = {
   "West Bengal": { very: 892, moderate: 895, open: 331, total: 2118 },
 };
 
-// ✅ Color scales
+// ✅ Color Scales
 const getEmissionColor = (val) =>
   val > 12 ? "#800026"
   : val > 10 ? "#BD0026"
@@ -59,7 +59,7 @@ const getMangroveColor = (val) =>
   : val > 0 ? "#a8ddb5"
   : "#FF0000";
 
-// ✅ Zoom helper
+// ✅ Zoom Helper
 function MapZoom({ lat, lng }) {
   const map = useMap();
   useEffect(() => {
@@ -79,7 +79,7 @@ export default function PublicMap() {
   const [highlightLatLng, setHighlightLatLng] = useState(null);
   const mapRef = useRef();
 
-  // 🔄 Simulated emission change with time slider
+  // 🔄 Simulated emission change
   useEffect(() => {
     if (timeStep > 0) {
       const updated = { ...initialCarbonData };
@@ -93,7 +93,7 @@ export default function PublicMap() {
     }
   }, [timeStep]);
 
-  // ✅ Emission filter
+  // ✅ Filter Logic
   const matchesEmissionFilter = (data) => {
     if (!data) return false;
     if (filterStatus === "all") return true;
@@ -145,7 +145,7 @@ export default function PublicMap() {
     }
   };
 
-  // ✅ Popup handler
+  // ✅ Popup
   const onEachState = (feature, layer) => {
     const name = feature.properties.NAME_1;
     const dataCarbon = carbonData[name];
@@ -173,10 +173,10 @@ export default function PublicMap() {
     if (view === "mangroves" && dataMangrove) {
       layer.bindPopup(
         `<b>${name}</b><br/>
-         🌳 Very Dense: ${dataMangrove.very} km²<br/>
-         🌲 Moderately Dense: ${dataMangrove.moderate} km²<br/>
-         🌱 Open: ${dataMangrove.open} km²<br/>
-         📊 Total: <b>${dataMangrove.total} km²</b>`
+         Very Dense: ${dataMangrove.very} km²<br/>
+         Moderately Dense: ${dataMangrove.moderate} km²<br/>
+         Open: ${dataMangrove.open} km²<br/>
+         Total: <b>${dataMangrove.total} km²</b>`
       );
     } else {
       layer.bindPopup(
@@ -188,45 +188,50 @@ export default function PublicMap() {
   };
 
   return (
-    <div className="min-h-screen p-4 bg-gray-50">
-      <h2 className="text-3xl font-bold text-center text-primary mb-6">
+    <div className="min-h-screen p-6 bg-gradient-to-br from-sky-50 via-emerald-50 to-teal-100">
+      <h2 className="text-4xl font-extrabold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-sky-700 via-emerald-700 to-teal-800 drop-shadow">
         Carbon Emission, Credits & Mangroves Dashboard
       </h2>
 
       {/* Controls */}
-      <div className="flex flex-wrap justify-center gap-4 mb-6">
+      <div className="flex flex-wrap justify-center gap-4 mb-8">
         <button
           onClick={() => setView("emission")}
-          className={`px-4 py-2 rounded-lg ${
-            view === "emission" ? "bg-red-600 text-white" : "bg-gray-200"
+          className={`px-5 py-2 rounded-xl shadow-md font-medium transition ${
+            view === "emission"
+              ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg scale-105"
+              : "bg-white text-gray-700 border hover:bg-gray-100"
           }`}
         >
           Emissions
         </button>
         <button
           onClick={() => setView("credits")}
-          className={`px-4 py-2 rounded-lg ${
-            view === "credits" ? "bg-blue-600 text-white" : "bg-gray-200"
+          className={`px-5 py-2 rounded-xl shadow-md font-medium transition ${
+            view === "credits"
+              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg scale-105"
+              : "bg-white text-gray-700 border hover:bg-gray-100"
           }`}
         >
           Credits
         </button>
         <button
           onClick={() => setView("mangroves")}
-          className={`px-4 py-2 rounded-lg ${
-            view === "mangroves" ? "bg-green-600 text-white" : "bg-gray-200"
+          className={`px-5 py-2 rounded-xl shadow-md font-medium transition ${
+            view === "mangroves"
+              ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg scale-105"
+              : "bg-white text-gray-700 border hover:bg-gray-100"
           }`}
         >
           Mangroves
         </button>
 
-        {/* Show filters only for emission */}
         {view === "emission" && (
           <>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="border p-2 rounded-lg"
+              className="border border-gray-300 rounded-xl px-4 py-2 shadow-sm focus:ring-2 focus:ring-emerald-400"
             >
               <option value="all">All</option>
               <option value="high">High Emission</option>
@@ -240,19 +245,19 @@ export default function PublicMap() {
               max="10"
               value={timeStep}
               onChange={(e) => setTimeStep(Number(e.target.value))}
-              className="w-full md:w-40"
+              className="w-40 accent-emerald-600"
             />
           </>
         )}
       </div>
 
       {/* Map + Legend */}
-      <div className="flex gap-4">
+      <div className="flex flex-col lg:flex-row gap-6">
         {/* Map */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="h-[600px] flex-1 rounded-lg shadow-lg overflow-hidden"
+          className="h-[600px] flex-1 rounded-2xl shadow-xl overflow-hidden border border-gray-200"
         >
           <MapContainer
             center={[22.5, 80]}
@@ -275,9 +280,9 @@ export default function PublicMap() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="w-64 bg-white p-4 rounded-lg shadow-md"
+          className="w-full lg:w-72 bg-white/80 backdrop-blur-md p-5 rounded-2xl shadow-md border border-gray-100"
         >
-          <h3 className="font-semibold mb-2">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
             {view === "emission"
               ? "Carbon Emission"
               : view === "credits"
@@ -317,7 +322,7 @@ export default function PublicMap() {
                   style={{ backgroundColor: item.color }}
                   className="w-6 h-6 rounded-md border border-gray-300"
                 ></span>
-                <span className="text-sm">{item.label}</span>
+                <span className="text-sm text-gray-700">{item.label}</span>
               </div>
             ))}
           </div>
