@@ -1,0 +1,70 @@
+import React from "react";
+import { motion } from "framer-motion";
+
+export default function AdminPanel({ projects, updateStatus }) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+      <motion.h1
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-4xl font-extrabold text-center mb-10 bg-gradient-to-r from-indigo-600 to-pink-500 bg-clip-text text-transparent"
+      >
+        🛠️ Admin Panel — Project Approvals
+      </motion.h1>
+
+      <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        {projects.map((project) => (
+          <motion.div
+            key={project.id}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ scale: 1.02 }}
+            className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200"
+          >
+            <img
+              src={project.image}
+              alt={project.name}
+              className="w-full h-40 object-cover"
+            />
+            <div className="p-5">
+              <h2 className="text-xl font-bold text-gray-800">{project.name}</h2>
+              <p className="text-gray-600 text-sm mt-2">{project.description}</p>
+              <span
+                className={`inline-block mt-3 px-3 py-1 rounded-full text-xs font-medium ${
+                  project.status === "approved"
+                    ? "bg-green-100 text-green-700"
+                    : project.status === "pending"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
+                {project.status.toUpperCase()}
+              </span>
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={() => updateStatus(project.id, "approved")}
+                  className="px-3 py-1 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition"
+                >
+                  Approve
+                </button>
+                <button
+                  onClick={() => updateStatus(project.id, "pending")}
+                  className="px-3 py-1 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600 transition"
+                >
+                  Pending
+                </button>
+                <button
+                  onClick={() => updateStatus(project.id, "rejected")}
+                  className="px-3 py-1 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition"
+                >
+                  Reject
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}

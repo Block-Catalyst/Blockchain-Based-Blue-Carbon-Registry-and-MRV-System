@@ -1,0 +1,105 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Gujarat", "emission": 14, "credits": 400 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [ [68.0, 24.0], [71.5, 24.0], [71.5, 21.5], [68.0, 21.5], [68.0, 24.0] ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Odisha", "emission": 13, "credits": 1100 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [ [83.5, 21.0], [87.0, 21.0], [87.0, 19.0], [83.5, 19.0], [83.5, 21.0] ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Chhattisgarh", "emission": 10, "credits": 600 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [ [80.5, 23.5], [83.0, 23.5], [83.0, 20.5], [80.5, 20.5], [80.5, 23.5] ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Jharkhand", "emission": 9, "credits": 500 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [ [85.5, 24.0], [87.5, 24.0], [87.5, 22.0], [85.5, 22.0], [85.5, 24.0] ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Karnataka", "emission": 8, "credits": 950 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [ [74.0, 15.0], [78.5, 15.0], [78.5, 11.5], [74.0, 11.5], [74.0, 15.0] ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Maharashtra", "emission": 8, "credits": 700 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [ [72.5, 21.0], [80.0, 21.0], [80.0, 16.5], [72.5, 16.5], [72.5, 21.0] ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Andhra Pradesh", "emission": 7, "credits": 1050 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [ [77.0, 17.5], [84.0, 17.5], [84.0, 13.0], [77.0, 13.0], [77.0, 17.5] ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Rajasthan", "emission": 5, "credits": 300 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [ [69.5, 30.0], [76.0, 30.0], [76.0, 24.0], [69.5, 24.0], [69.5, 30.0] ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "West Bengal", "emission": 5, "credits": 950 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [ [87.5, 26.0], [89.5, 26.0], [89.5, 22.5], [87.5, 22.5], [87.5, 26.0] ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Tamil Nadu", "emission": 4, "credits": 1000 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [ [77.0, 13.5], [80.5, 13.5], [80.5, 8.5], [77.0, 8.5], [77.0, 13.5] ]
+        ]
+      }
+    }
+  ]
+}
