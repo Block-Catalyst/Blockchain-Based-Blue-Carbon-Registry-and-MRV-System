@@ -1,153 +1,247 @@
-import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-// Validation Schema
-const schema = yup
-  .object({
-    role: yup.string().required("Please select your role"),
-    email: yup
-      .string()
-      .email("Enter a valid email")
-      .required("Email is required"),
-    password: yup
-      .string()
-      .min(4, "Password must be at least 4 characters")
-      .required("Password is required"),
-  })
-  .required();
-
-export default function Login({ setUser }) {
-  const {
-    register,
-    handleSubmit,
-    watch,
-    trigger,
-    formState: { errors },
-  } = useForm({
-    resolver: yupResolver(schema),
-    mode: "onChange",
-    defaultValues: { role: "field", email: "", password: "" },
+export default function Login() {
+  const navigate = useNavigate();
+  const { login, loading, error, clearError, isAuthenticated } = useAuth();
+  
+  const [formData, setFormData] = useState({
+    role: "field",
+    email: "",
+    password: ""
   });
 
-  const navigate = useNavigate();
-  const role = watch("role");
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Redirect if already authenticated
   useEffect(() => {
-    trigger("email");
-  }, [role, trigger]);
+    if (isAuthenticated()) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
-  const onSubmit = (data) => {
-    const storedUser = JSON.parse(localStorage.getItem("registeredUser"));
+  // Clear auth errors when component mounts
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
-    if (role === "admin") {
-      if (data.email === "admin@example.com" && data.password === "admin123") {
-        setUser({ role: "admin", email: data.email, username: "Admin" });
-        localStorage.setItem("role", "admin");
-        localStorage.setItem("email", data.email);
-        navigate("/admin");
+  const validateForm = () => {
+    const newErrors = {};
+
+    // Role validation
+    if (!formData.role) {
+      newErrors.role = "Please select your role";
+    }
+
+    // Email validation
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Enter a valid email";
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 4) {
+      newErrors.password = "Password must be at least 4 characters";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ""
+      }));
+    }
+
+    // Clear auth error when user starts typing
+    if (error) {
+      clearError();
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await login(formData);
+      
+      if (result.success) {
+        // Navigate based on user role
+        const userRole = result.data.data.user.role;
+        if (userRole === 'admin') {
+          navigate('/admin-dashboard');
+        } else {
+          navigate('/field-portal');
+        }
       } else {
-        alert("Invalid admin credentials!");
+        // Handle login errors
+        if (result.errors && result.errors.length > 0) {
+          const formErrors = {};
+          result.errors.forEach(err => {
+            if (err.path) {
+              formErrors[err.path] = err.msg || err.message;
+            }
+          });
+          setErrors(formErrors);
+        }
       }
-    } else if (role === "field") {
-      if (
-        storedUser &&
-        storedUser.email === data.email &&
-        storedUser.password === data.password
-      ) {
-        setUser({
-          role: "field",
-          email: data.email,
-          project: "Mangrove Restoration A",
-          credits: 1200,
-          area: 50,
-        });
-        localStorage.setItem("role", "field");
-        localStorage.setItem("email", data.email);
-        navigate("/field-portal");
-      } else {
-        alert("Invalid Field User credentials! Please register first.");
-      }
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 via-white to-green-50">
       <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-8 border border-gray-100">
-        <h2 className="text-3xl font-extrabold mb-6 text-center text-blue-700">
-          Welcome Back
-        </h2>
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-extrabold text-blue-700 mb-2">
+            Welcome Back
+          </h2>
+          <p className="text-gray-600">Sign in to your account</p>
+        </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Display auth error */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600 text-sm">{error.message}</p>
+            {error.errors && error.errors.length > 0 && (
+              <ul className="mt-1 text-red-600 text-xs list-disc list-inside">
+                {error.errors.map((err, index) => (
+                  <li key={index}>{err.message || err.msg}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Role Selection */}
           <div>
-            <label className="block text-sm font-semibold mb-1 text-gray-700">
+            <label className="block text-sm font-semibold mb-2 text-gray-700">
               Select Role
             </label>
             <select
-              {...register("role")}
-              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              name="role"
+              value={formData.role}
+              onChange={handleInputChange}
+              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
+              disabled={loading}
             >
               <option value="field">Field User</option>
               <option value="admin">Admin</option>
             </select>
-            <p className="text-red-500 text-xs mt-1">{errors.role?.message}</p>
+            {errors.role && <p className="text-red-500 text-xs mt-1">{errors.role}</p>}
           </div>
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-semibold mb-1 text-gray-700">
+            <label className="block text-sm font-semibold mb-2 text-gray-700">
               Email
             </label>
             <input
-              {...register("email")}
-              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
               placeholder="Enter your email"
+              disabled={loading}
             />
-            <p className="text-red-500 text-xs mt-1">{errors.email?.message}</p>
+            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+            
+            {/* Demo credentials hint */}
+            {formData.role === "admin" && (
+              <p className="text-xs text-blue-600 mt-1">
+                Demo: admin@example.com / admin123
+              </p>
+            )}
+            {formData.role === "field" && (
+              <p className="text-xs text-green-600 mt-1">
+                Use registered email / password
+              </p>
+            )}
           </div>
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-semibold mb-1 text-gray-700">
+            <label className="block text-sm font-semibold mb-2 text-gray-700">
               Password
             </label>
             <input
               type="password"
-              {...register("password")}
-              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
               placeholder="Enter your password"
+              disabled={loading}
             />
-            <p className="text-red-500 text-xs mt-1">
-              {errors.password?.message}
-            </p>
+            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+          </div>
+
+          {/* Forgot Password Link */}
+          <div className="text-right">
+            <Link 
+              to="/forgot-password" 
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Forgot your password?
+            </Link>
           </div>
 
           {/* Signup option only for Field Users */}
-          {role === "field" && (
+          {formData.role === "field" && (
             <div className="text-sm text-center text-gray-600">
               <p>
                 New User?{" "}
-                <button
-                  type="button"
-                  onClick={() => navigate("/register")}
-                  className="text-blue-600 font-semibold hover:underline"
+                <Link
+                  to="/register"
+                  className="text-blue-600 font-semibold hover:underline focus:outline-none"
                 >
                   Sign Up
-                </button>
+                </Link>
               </p>
             </div>
           )}
 
-          {/* Submit */}
+          {/* Submit Button */}
           <div>
             <button
               type="submit"
-              className="w-full py-3 bg-gradient-to-r from-blue-600 to-green-600 text-white font-bold rounded-lg shadow-md hover:opacity-90 active:scale-95 transition"
+              disabled={loading || isSubmitting}
+              className="w-full py-3 bg-gradient-to-r from-blue-600 to-green-600 text-white font-bold rounded-lg shadow-md hover:opacity-90 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              Login
+              {isSubmitting ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Logging in...
+                </div>
+              ) : (
+                "Login"
+              )}
             </button>
           </div>
         </form>

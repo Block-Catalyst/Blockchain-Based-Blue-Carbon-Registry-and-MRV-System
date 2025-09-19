@@ -1,224 +1,137 @@
-import React, { useState } from "react";
+import React from 'react';
+import { useAuth } from '../context/AuthContext';
 
-export default function FieldUserPortal({ addProject }) {
-  const [form, setForm] = useState({
-    name: "",
-    organization: "",
-    region: "",
-    area: "",
-    method: "",
-    vintage: "",
-    description: "",
-    file: null,
-    agree: false,
-  });
+const FieldPortal = () => {
+  const { user, logout } = useAuth();
 
-  const [localProjects, setLocalProjects] = useState([]);
-
-  const handleChange = (e) => {
-    const { name, value, files, type, checked } = e.target;
-    if (type === "file") {
-      setForm({ ...form, file: files[0] });
-    } else if (type === "checkbox") {
-      setForm({ ...form, [name]: checked });
-    } else {
-      setForm({ ...form, [name]: value });
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!form.name || !form.organization || !form.region || !form.file || !form.agree) {
-      alert("Please fill all required fields and agree to terms.");
-      return;
-    }
-
-    const newProject = {
-      id: Date.now(),
-      name: form.name,
-      organization: form.organization,
-      region: form.region,
-      area: form.area,
-      method: form.method,
-      vintage: form.vintage,
-      description: form.description,
-      image: form.file ? URL.createObjectURL(form.file) : "",
-      status: "pending",
-    };
-
-    addProject(newProject);
-    setLocalProjects((prev) => [...prev, newProject]);
-
-    setForm({
-      name: "",
-      organization: "",
-      region: "",
-      area: "",
-      method: "",
-      vintage: "",
-      description: "",
-      file: null,
-      agree: false,
-    });
-    e.target.reset();
+  const handleLogout = () => {
+    logout();
+    window.location.href = '/login';
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-sky-50 to-indigo-100 p-8 relative overflow-hidden">
-      {/* Decorative glows */}
-      <div className="absolute -top-32 -left-20 w-96 h-96 bg-emerald-300/30 rounded-full blur-3xl"></div>
-      <div className="absolute top-40 right-20 w-80 h-80 bg-indigo-300/20 rounded-full blur-2xl"></div>
-
-      <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 via-emerald-700 to-sky-800 drop-shadow-xl">
-        Register Blue Carbon Project
-      </h2>
-
-      <div className="grid lg:grid-cols-2 gap-10">
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6 bg-white/90 backdrop-blur-md border border-indigo-100 shadow-lg rounded-2xl p-8"
-        >
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            placeholder="Project Name"
-            className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
-            required
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input
-              type="text"
-              name="organization"
-              value={form.organization}
-              onChange={handleChange}
-              placeholder="Organization"
-              className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
-              required
-            />
-            <input
-              type="text"
-              name="region"
-              value={form.region}
-              onChange={handleChange}
-              placeholder="Region / District"
-              className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
-              required
-            />
-            <input
-              type="number"
-              name="area"
-              value={form.area}
-              onChange={handleChange}
-              placeholder="Area (ha)"
-              className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <select
-              name="method"
-              value={form.method}
-              onChange={handleChange}
-              className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              <option value="">Select Method</option>
-              <option value="plantation">Plantation</option>
-              <option value="natural_regeneration">Natural Regeneration</option>
-              <option value="mixed">Mixed Approach</option>
-            </select>
-            <input
-              type="number"
-              name="vintage"
-              value={form.vintage}
-              onChange={handleChange}
-              placeholder="Vintage (year)"
-              className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </div>
-
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            placeholder="Description / Species Mix / Notes"
-            className="w-full border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Upload baseline evidence (GeoJSON, images, drone orthomosaic)
-            </label>
-            <input
-              type="file"
-              name="file"
-              accept="image/*,.geojson"
-              onChange={handleChange}
-              className="w-full border border-gray-300 p-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              name="agree"
-              checked={form.agree}
-              onChange={handleChange}
-              className="w-5 h-5 accent-blue-600"
-            />
-            <label className="text-gray-700">
-              I affirm data is accurate to my knowledge
-            </label>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-3 bg-gradient-to-r from-indigo-600 via-emerald-600 to-sky-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-2xl transition"
-          >
-            Submit for Review
-          </button>
-        </form>
-
-        {/* Submitted Projects */}
-        <div className="space-y-6">
-          <h3 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 via-emerald-700 to-sky-800 mb-4">
-            Your Submitted Projects
-          </h3>
-          {localProjects.length === 0 ? (
-            <p className="text-gray-500">No projects submitted yet.</p>
-          ) : (
-            <div className="grid gap-6">
-              {localProjects.map((p) => (
-                <div
-                  key={p.id}
-                  className="bg-white/90 backdrop-blur-md border border-indigo-100 shadow-lg rounded-2xl overflow-hidden hover:shadow-2xl transition"
-                >
-                  {p.image && (
-                    <img
-                      src={p.image}
-                      alt={p.name}
-                      className="w-full h-44 object-cover transform hover:scale-105 transition duration-500"
-                    />
-                  )}
-                  <div className="p-4">
-                    <h4 className="font-bold text-lg">{p.name}</h4>
-                    <p className="text-sm text-gray-600">
-                      {p.organization} | {p.region}
-                    </p>
-                    <p className="text-sm">
-                      Area: {p.area} ha | Method: {p.method} | Year: {p.vintage}
-                    </p>
-                    <p className="text-sm text-gray-500 mt-2">{p.description}</p>
-                  </div>
-                </div>
-              ))}
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div className="flex items-center">
+              <h1 className="text-2xl font-bold text-gray-900">Field Portal</h1>
             </div>
-          )}
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-700">Welcome, {user?.name || user?.email}</span>
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {/* User Info Card */}
+        <div className="bg-white shadow rounded-lg mb-6">
+          <div className="px-4 py-5 sm:p-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+              Profile Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Name</label>
+                <p className="mt-1 text-sm text-gray-900">{user?.name || 'N/A'}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <p className="mt-1 text-sm text-gray-900">{user?.email || 'N/A'}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Organization</label>
+                <p className="mt-1 text-sm text-gray-900">{user?.organization || 'N/A'}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Role</label>
+                <p className="mt-1 text-sm text-gray-900">{user?.roleTitle || user?.role || 'N/A'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Project Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 rounded-md">
+                <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Credits</p>
+                <p className="text-2xl font-semibold text-gray-900">{user?.totalCredits || user?.credits || '1,200'}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-100 rounded-md">
+                <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Area (hectares)</p>
+                <p className="text-2xl font-semibold text-gray-900">{user?.area || '50'}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-100 rounded-md">
+                <svg className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Project</p>
+                <p className="text-lg font-semibold text-gray-900">{user?.project || 'Mangrove Restoration A'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Current Project */}
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+              Current Project Details
+            </h3>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-2">{user?.project || 'Mangrove Restoration A'}</h4>
+              <p className="text-sm text-gray-600 mb-4">
+                Working on restoring coastal mangrove ecosystems to improve biodiversity and protect against coastal erosion.
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-sm font-medium text-gray-700">Status:</span>
+                  <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Active
+                  </span>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-700">Location:</span>
+                  <span className="ml-2 text-sm text-gray-600">{user?.location || 'Coastal Region'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default FieldPortal;
