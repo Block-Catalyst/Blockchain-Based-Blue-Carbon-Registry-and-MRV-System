@@ -17,6 +17,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Include cookies for session management
 });
 
 // Request interceptor to add token to all requests
@@ -33,16 +34,25 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle token expiration
+// Response interceptor to handle token expiration and other errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Handle 401 errors (unauthorized)
     if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      // Check if it's not a login attempt
+      if (!error.config.url?.includes('/auth/login')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
     }
+    
+    // Handle network errors
+    if (!error.response) {
+      console.error('Network error:', error);
+    }
+    
     return Promise.reject(error);
   }
 );
@@ -53,7 +63,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Check if user is authenticated on app load
+  // Initialize auth on app load
   useEffect(() => {
     const initAuth = async () => {
       try {
@@ -66,10 +76,16 @@ export const AuthProvider = ({ children }) => {
           setUser(userData);
           
           // Verify token with backend
-          await verifyToken(storedToken);
+          try {
+            await verifyToken(storedToken);
+          } catch (verifyError) {
+            console.error('Token verification failed:', verifyError);
+            // Clear invalid token
+            logout();
+          }
         }
       } catch (error) {
-        console.error('Error loading stored auth data:', error);
+        console.error('Error initializing auth:', error);
         logout();
       } finally {
         setLoading(false);
@@ -90,14 +106,16 @@ export const AuthProvider = ({ children }) => {
 
       if (response.data.success) {
         // Token is valid, update user data if needed
-        setUser(prevUser => ({ ...prevUser, ...response.data.data.user }));
+        const userData = response.data.data.user;
+        setUser(prevUser => ({ ...prevUser, ...userData }));
+        
+        // Update localStorage with fresh user data
+        localStorage.setItem('user', JSON.stringify(userData));
         return true;
       }
     } catch (error) {
       console.error('Token verification failed:', error);
-      // Token is invalid, logout user
-      logout();
-      return false;
+      throw error;
     }
   };
 
@@ -123,8 +141,17 @@ export const AuthProvider = ({ children }) => {
         return { success: true, data: response.data };
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Registration failed';
-      const errors = error.response?.data?.errors || [];
+      console.error('Registration error:', error);
+      
+      let errorMessage = 'Registration failed';
+      let errors = [];
+
+      if (error.response?.data) {
+        errorMessage = error.response.data.message || errorMessage;
+        errors = error.response.data.errors || [];
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
       
       setError({ message: errorMessage, errors });
       return { 
@@ -159,8 +186,17 @@ export const AuthProvider = ({ children }) => {
         return { success: true, data: response.data };
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Login failed';
-      const errors = error.response?.data?.errors || [];
+      console.error('Login error:', error);
+      
+      let errorMessage = 'Login failed';
+      let errors = [];
+
+      if (error.response?.data) {
+        errorMessage = error.response.data.message || errorMessage;
+        errors = error.response.data.errors || [];
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
       
       setError({ message: errorMessage, errors });
       return { 
@@ -176,6 +212,7 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = async () => {
     try {
+      setLoading(true);
       // Call logout endpoint if user is authenticated
       if (token) {
         await api.post('/auth/logout');
@@ -190,6 +227,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('registeredUser'); // Clean up old localStorage data
+      setLoading(false);
     }
   };
 
@@ -213,8 +251,17 @@ export const AuthProvider = ({ children }) => {
         return { success: true, data: response.data };
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Profile update failed';
-      const errors = error.response?.data?.errors || [];
+      console.error('Profile update error:', error);
+      
+      let errorMessage = 'Profile update failed';
+      let errors = [];
+
+      if (error.response?.data) {
+        errorMessage = error.response.data.message || errorMessage;
+        errors = error.response.data.errors || [];
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
       
       setError({ message: errorMessage, errors });
       return { 
@@ -239,8 +286,17 @@ export const AuthProvider = ({ children }) => {
         return { success: true, data: response.data };
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Password change failed';
-      const errors = error.response?.data?.errors || [];
+      console.error('Password change error:', error);
+      
+      let errorMessage = 'Password change failed';
+      let errors = [];
+
+      if (error.response?.data) {
+        errorMessage = error.response.data.message || errorMessage;
+        errors = error.response.data.errors || [];
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
       
       setError({ message: errorMessage, errors });
       return { 
@@ -265,7 +321,15 @@ export const AuthProvider = ({ children }) => {
         return { success: true, data: response.data };
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Password reset request failed';
+      console.error('Forgot password error:', error);
+      
+      let errorMessage = 'Password reset request failed';
+
+      if (error.response?.data) {
+        errorMessage = error.response.data.message || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
       
       setError({ message: errorMessage });
       return { 
@@ -291,7 +355,15 @@ export const AuthProvider = ({ children }) => {
         return { success: true, data: response.data };
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Password reset failed';
+      console.error('Password reset error:', error);
+      
+      let errorMessage = 'Password reset failed';
+
+      if (error.response?.data) {
+        errorMessage = error.response.data.message || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
       
       setError({ message: errorMessage });
       return { 
@@ -306,6 +378,7 @@ export const AuthProvider = ({ children }) => {
   // Get current user data
   const getCurrentUser = async () => {
     try {
+      setLoading(true);
       const response = await api.get('/auth/me');
 
       if (response.data.success) {
@@ -324,6 +397,8 @@ export const AuthProvider = ({ children }) => {
       // If user fetch fails, probably token is invalid
       logout();
       return { success: false, message: 'Failed to get user data' };
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, loading, error, clearError, isAuthenticated } = useAuth();
   
   const [formData, setFormData] = useState({
@@ -14,11 +15,28 @@ export default function Login() {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showMessage, setShowMessage] = useState(false);
+
+  // Check for success message from registration
+  useEffect(() => {
+    if (location.state?.message) {
+      setShowMessage(location.state.message);
+      // Clear message after 5 seconds
+      setTimeout(() => setShowMessage(false), 5000);
+      // Clear the state so it doesn't show again on refresh
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location, navigate]);
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated()) {
-      navigate('/dashboard');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.role === 'admin') {
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/field-portal');
+      }
     }
   }, [isAuthenticated, navigate]);
 
@@ -72,6 +90,11 @@ export default function Login() {
     if (error) {
       clearError();
     }
+
+    // Clear success message when user starts typing
+    if (showMessage) {
+      setShowMessage(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -82,6 +105,7 @@ export default function Login() {
     }
 
     setIsSubmitting(true);
+    setErrors({});
 
     try {
       const result = await login(formData);
@@ -90,24 +114,26 @@ export default function Login() {
         // Navigate based on user role
         const userRole = result.data.data.user.role;
         if (userRole === 'admin') {
-          navigate('/admin-dashboard');
+          navigate('/admin-dashboard', { replace: true });
         } else {
-          navigate('/field-portal');
+          navigate('/field-portal', { replace: true });
         }
       } else {
-        // Handle login errors
+        // Handle login errors from backend
         if (result.errors && result.errors.length > 0) {
           const formErrors = {};
           result.errors.forEach(err => {
-            if (err.path) {
-              formErrors[err.path] = err.msg || err.message;
-            }
+            const field = err.path || err.param || 'general';
+            formErrors[field] = err.msg || err.message;
           });
           setErrors(formErrors);
         }
       }
     } catch (error) {
       console.error('Login error:', error);
+      setErrors({ 
+        general: "An unexpected error occurred. Please try again." 
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -123,6 +149,13 @@ export default function Login() {
           <p className="text-gray-600">Sign in to your account</p>
         </div>
 
+        {/* Success message from registration */}
+        {showMessage && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-green-600 text-sm">{showMessage}</p>
+          </div>
+        )}
+
         {/* Display auth error */}
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -137,6 +170,13 @@ export default function Login() {
           </div>
         )}
 
+        {/* General form errors */}
+        {errors.general && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600 text-sm">{errors.general}</p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Role Selection */}
           <div>
@@ -148,7 +188,7 @@ export default function Login() {
               value={formData.role}
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
-              disabled={loading}
+              disabled={loading || isSubmitting}
             >
               <option value="field">Field User</option>
               <option value="admin">Admin</option>
@@ -168,7 +208,7 @@ export default function Login() {
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
               placeholder="Enter your email"
-              disabled={loading}
+              disabled={loading || isSubmitting}
             />
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
             
@@ -180,7 +220,7 @@ export default function Login() {
             )}
             {formData.role === "field" && (
               <p className="text-xs text-green-600 mt-1">
-                Use registered email / password
+                Use your registered email and password
               </p>
             )}
           </div>
@@ -197,7 +237,7 @@ export default function Login() {
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
               placeholder="Enter your password"
-              disabled={loading}
+              disabled={loading || isSubmitting}
             />
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
           </div>

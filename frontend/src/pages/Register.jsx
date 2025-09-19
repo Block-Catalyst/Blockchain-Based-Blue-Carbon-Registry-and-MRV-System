@@ -24,7 +24,12 @@ export default function Register() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated()) {
-      navigate('/dashboard');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.role === 'admin') {
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/field-portal');
+      }
     }
   }, [isAuthenticated, navigate]);
 
@@ -41,6 +46,8 @@ export default function Register() {
       newErrors.fullName = "Full Name is required";
     } else if (formData.fullName.trim().length < 2) {
       newErrors.fullName = "Full Name must be at least 2 characters";
+    } else if (formData.fullName.trim().length > 100) {
+      newErrors.fullName = "Full Name cannot exceed 100 characters";
     }
 
     // Email validation
@@ -67,6 +74,8 @@ export default function Register() {
     // Organization validation
     if (!formData.organization.trim()) {
       newErrors.organization = "Organization / NGO / Community name is required";
+    } else if (formData.organization.trim().length > 200) {
+      newErrors.organization = "Organization name cannot exceed 200 characters";
     }
 
     // Phone validation
@@ -79,11 +88,15 @@ export default function Register() {
     // Location validation
     if (!formData.location.trim()) {
       newErrors.location = "Location is required";
+    } else if (formData.location.trim().length > 200) {
+      newErrors.location = "Location cannot exceed 200 characters";
     }
 
     // Role validation
     if (!formData.userRole.trim()) {
       newErrors.userRole = "Role is required";
+    } else if (formData.userRole.trim().length > 100) {
+      newErrors.userRole = "Role cannot exceed 100 characters";
     }
 
     setErrors(newErrors);
@@ -119,6 +132,7 @@ export default function Register() {
     }
 
     setIsSubmitting(true);
+    setErrors({});
 
     try {
       // Remove confirmPassword before sending to API
@@ -129,25 +143,44 @@ export default function Register() {
       if (result.success) {
         setIsSubmitted(true);
         // Reset form
+        setFormData({
+          fullName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          organization: "",
+          phone: "",
+          location: "",
+          userRole: ""
+        });
+        
+        // Redirect to login with success message
         setTimeout(() => {
           navigate('/login', { 
-            state: { message: 'Registration successful! Please login with your credentials.' }
+            state: { 
+              message: 'Registration successful! Please login with your credentials.' 
+            }
           });
         }, 3000);
+        
       } else {
-        // Handle registration errors
+        // Handle registration errors from backend
         if (result.errors && result.errors.length > 0) {
           const formErrors = {};
           result.errors.forEach(err => {
-            if (err.path || err.field) {
-              formErrors[err.path || err.field] = err.msg || err.message;
-            }
+            const field = err.path || err.field || err.param || 'general';
+            formErrors[field] = err.msg || err.message;
           });
           setErrors(formErrors);
+        } else if (result.message) {
+          setErrors({ general: result.message });
         }
       }
     } catch (error) {
       console.error('Registration error:', error);
+      setErrors({ 
+        general: "An unexpected error occurred. Please try again." 
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -165,7 +198,10 @@ export default function Register() {
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Registration Successful!</h2>
             <p className="text-gray-600 mb-4">Your account has been created successfully.</p>
-            <p className="text-sm text-gray-500">Redirecting to login page...</p>
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+              <p className="text-sm text-gray-500">Redirecting to login page...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -191,11 +227,18 @@ export default function Register() {
           </div>
         )}
 
+        {/* General form errors */}
+        {errors.general && (
+          <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600 text-sm">{errors.general}</p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Full Name */}
             <div className="col-span-2">
-              <label className="block text-sm font-medium mb-1 text-gray-700">Full Name</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700">Full Name*</label>
               <input 
                 type="text"
                 name="fullName"
@@ -203,14 +246,15 @@ export default function Register() {
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
                 placeholder="Enter your full name"
-                disabled={loading}
+                disabled={loading || isSubmitting}
+                maxLength={100}
               />
               {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Email</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700">Email*</label>
               <input 
                 type="email"
                 name="email"
@@ -218,14 +262,14 @@ export default function Register() {
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
                 placeholder="Enter your email"
-                disabled={loading}
+                disabled={loading || isSubmitting}
               />
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
             </div>
 
             {/* Phone */}
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Phone Number</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700">Phone Number*</label>
               <input 
                 type="tel"
                 name="phone"
@@ -233,14 +277,16 @@ export default function Register() {
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
                 placeholder="Enter 10-digit phone number"
-                disabled={loading}
+                disabled={loading || isSubmitting}
+                maxLength={10}
+                pattern="[0-9]{10}"
               />
               {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Password</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700">Password*</label>
               <input 
                 type="password"
                 name="password"
@@ -248,14 +294,14 @@ export default function Register() {
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
                 placeholder="Enter password (min. 6 characters)"
-                disabled={loading}
+                disabled={loading || isSubmitting}
               />
               {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
             </div>
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Confirm Password</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700">Confirm Password*</label>
               <input 
                 type="password"
                 name="confirmPassword"
@@ -263,14 +309,14 @@ export default function Register() {
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
                 placeholder="Confirm password"
-                disabled={loading}
+                disabled={loading || isSubmitting}
               />
               {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
             </div>
 
             {/* Organization */}
             <div className="col-span-2">
-              <label className="block text-sm font-medium mb-1 text-gray-700">Organization / NGO / Community</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700">Organization / NGO / Community*</label>
               <input 
                 type="text"
                 name="organization"
@@ -278,14 +324,15 @@ export default function Register() {
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
                 placeholder="Enter organization name"
-                disabled={loading}
+                disabled={loading || isSubmitting}
+                maxLength={200}
               />
               {errors.organization && <p className="text-red-500 text-xs mt-1">{errors.organization}</p>}
             </div>
 
             {/* Location */}
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Location (District / State)</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700">Location (District / State)*</label>
               <input 
                 type="text"
                 name="location"
@@ -293,14 +340,15 @@ export default function Register() {
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
                 placeholder="Enter location"
-                disabled={loading}
+                disabled={loading || isSubmitting}
+                maxLength={200}
               />
               {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
             </div>
 
             {/* Role */}
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">Your Role</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700">Your Role*</label>
               <input 
                 type="text"
                 name="userRole"
@@ -308,7 +356,8 @@ export default function Register() {
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
                 placeholder="e.g. Community Leader, NGO Officer"
-                disabled={loading}
+                disabled={loading || isSubmitting}
+                maxLength={100}
               />
               {errors.userRole && <p className="text-red-500 text-xs mt-1">{errors.userRole}</p>}
             </div>
